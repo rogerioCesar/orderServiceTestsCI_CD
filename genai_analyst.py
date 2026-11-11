@@ -172,8 +172,26 @@ def comment_pr(model: str, diagnosis: str) -> None:
             if resp.status != 201:
                 raise RuntimeError(f"O GitHub não criou o comentário: HTTP {resp.status}")
     except HTTPError as exc:
-        # Não mostrar cabeçalhos da requisição nem o token nos logs.
-        raise RuntimeError(f"GitHub recusou o comentário: HTTP {exc.code}") from exc
+        try:
+            dados = json.loads(
+                exc.read(2048).decode("utf-8", errors="replace")
+            )
+            motivo = str(
+                dados.get("message", "Sem detalhes")
+            )[:250]
+        except (ValueError, AttributeError):
+            motivo = "Resposta indisponível"
+
+        permissoes = exc.headers.get(
+            "X-Accepted-GitHub-Permissions",
+            "Não informado"
+        )
+
+        raise RuntimeError(
+            f"GitHub recusou o comentário: HTTP {exc.code}. "
+            f"Motivo: {motivo}. "
+            f"Permissões aceitas: {permissoes[:160]}"
+        ) from exc
 
 
 def main() -> None:
