@@ -5,9 +5,10 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 
+
 def calculate_shipping(base_price: float, tax_rate: str) -> float:
-    """Retorna preço mais taxa; o laboratório alterará esta função para introduzir um bug."""
     return base_price + float(tax_rate)
+
 
 
 @app.get("/health")
