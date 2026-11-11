@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 
 def calculate_shipping(base_price: float, tax_rate: str) -> float:
-    return base_price + tax_rate
+    return base_price + float(tax_rate)
 
 
 
