@@ -95,9 +95,22 @@ def ollama_request(path: str, payload: dict | None = None, timeout: int = 180) -
     try:
         with opener.open(req, timeout=timeout) as response:
             return json.load(response)
+        
+    
     except HTTPError as exc:
-        message = exc.read(500).decode("utf-8", errors="replace")
-        raise RuntimeError(f"Ollama HTTP {exc.code}: {message}") from exc
+        try:
+            error_data = json.loads(
+                exc.read().decode("utf-8", errors="replace")
+            )
+            detalhe = str(
+                error_data.get("message", "Sem detalhes")
+            )[:300]
+        except (ValueError, UnicodeError):
+            detalhe = "Resposta de erro não disponível"
+        raise RuntimeError(
+            f"GitHub recusou o comentário: "
+            f"HTTP {exc.code} - {detalhe}"
+        ) from exc
     except URLError as exc:
         raise RuntimeError("Ollama indisponível em 127.0.0.1:11434; "
                            "inicie o serviço e confira a porta") from exc
